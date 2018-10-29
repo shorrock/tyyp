@@ -1,5 +1,8 @@
+import logging
 import requests
 from scapy.all import sr1, IP, UDP, DNS, DNSQR
+
+logging.basicConfig(filename='dns.log', level=logging.DEBUG)
 
 DNS_SERVERS = {
     "ISP": {
@@ -30,7 +33,7 @@ class DNSChecker(object):
             doh_response = self._doh_request('cloudflare-dns.com', dns_server=cloudflare_doh_server)
             assert doh_response['Status'] == 0, "Status(RCODE) is not 0"
         except Exception as e:
-            print("There is a problem with DoH")
+            logging.exception("There is a problem with DoH") 
             raise e
 
     def check(self, url):
@@ -50,7 +53,7 @@ class DNSChecker(object):
                     results[(isp, dns_server)] = dns_r
                 except TimeoutError:
                     msg = "Timeout"
-                print(domain, isp, dns_server, msg)
+                logging.info("domain: %s, isp: %s, dns_server: %s, msg: %s" % (domain, isp, dns_server, msg))
 
     @staticmethod
     def _doh_request(q_name, dns_server=DNS_SERVERS['CLOUDFLARE']['doh'][0], q_type='A'):
